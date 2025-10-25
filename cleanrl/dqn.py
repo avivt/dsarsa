@@ -64,7 +64,7 @@ class Args:
     """the starting epsilon for exploration"""
     end_e: float = 0.05
     """the ending epsilon for exploration"""
-    exploration_fraction: float = 0.5
+    exploration_fraction: float = 0.2
     """the fraction of `total-timesteps` it takes from start-e to go end-e"""
     learning_starts: int = 10000
     """timestep to start learning"""
@@ -92,7 +92,7 @@ class QNetwork(nn.Module):
     def __init__(self, env):
         super().__init__()
         self.network = nn.Sequential(
-            nn.Linear(np.array(env.single_observation_space.shape).prod(), 120),
+            nn.Linear(int(np.prod(env.single_observation_space.shape)), 120),
             nn.ReLU(),
             nn.Linear(120, 84),
             nn.ReLU(),
@@ -100,6 +100,10 @@ class QNetwork(nn.Module):
         )
 
     def forward(self, x):
+        if x.dtype != torch.float32:
+            x = x.float()
+        if x.dim() > 2:
+            x = x.view(x.size(0), -1)
         return self.network(x)
 
 
